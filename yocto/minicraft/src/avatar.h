@@ -27,12 +27,12 @@ public:
 
 	YVec3f LookAt;
 
-	YCamera * Cam;
-	MWorld * World;
+	YCamera* Cam;
+	MWorld* World;
 
 	YTimer _TimerStanding;
 
-	MAvatar(YCamera * cam, MWorld * world)
+	MAvatar(YCamera* cam, MWorld* world)
 	{
 		Position = YVec3f(10, 10, 10);
 		Height = 1.8f;
@@ -53,6 +53,8 @@ public:
 
 		Cam->setPosition(Position + YVec3f(0, 0, Height - 0.2f));
 		Cam->setLookAt(LookAt);
+
+		Mouse::changeMode();
 	}
 
 	void update(float elapsed)
@@ -77,16 +79,18 @@ public:
 			Cam->move(deltaPos);
 		}
 
-		//Cam->rotate(-Mouse::deltaPosition.X * Mouse::sensitivity * elapsed);
-		//Cam->rotateUp(Mouse::deltaPosition.Y * Mouse::sensitivity * elapsed);
+		if (Mouse::fpv)
+		{
+			Cam->rotate(-Mouse::deltaPosition.X * Mouse::sensitivity * elapsed);
+			Cam->rotateUp(Mouse::deltaPosition.Y * Mouse::sensitivity * elapsed);
 
-		//const YRenderer& renderer = *YEngine::getInstance()->Renderer;
-		//Mouse::resetMousePos(renderer.ScreenWidth / 2, renderer.ScreenHeight / 2);
+			Mouse::goToNewPos();
+		}
 	}
 
 	bool firstMouse = true;
 	int lastX, lastY;
-	
+
 
 	void handleInput()
 	{
@@ -94,17 +98,17 @@ public:
 		YVec3f backward = Cam->Direction * (GetKeyState('S') & 0x8000);
 		YVec3f right = Cam->RightVec * (GetKeyState('D') & 0x8000);
 		YVec3f left = Cam->RightVec * (GetKeyState('Q') & 0x8000);
-		
+
 		Direction = forward - backward + left - right;
 		Direction.normalize();
 
 		Jump = GetKeyState(VK_SPACE) & 0x8000;
 		Crouch = GetKeyState(VK_SHIFT) & 0x8000;
-		Run = GetKeyState(VK_CONTROL) & 0x8000;
+		Run = GetKeyState(VK_LCONTROL) & 0x8000;
 
 		Direction.Z = Jump - Crouch;
 
 		//Update mouse newPosition
-		//Mouse::setNewPosition(Mouse::getMousePosition());
+		Mouse::setNewPosition(Mouse::getMousePosition());
 	}
 };

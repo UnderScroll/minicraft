@@ -5,6 +5,7 @@
 
 #include "avatar.h"
 #include "world.h"
+#include "shape.h"
 
 class MEngineMinicraft : public YEngine {
 public :
@@ -22,6 +23,9 @@ public :
 	GUIEdtBox* genWorldSeedEdtBox;
 	GUILabel* genWorldSeedLabel;
 
+	GLuint cubeShader;
+	std::unique_ptr<YVbo> cubeVbo;
+
 	//Gestion singleton
 	static YEngine * getInstance()
 	{
@@ -32,7 +36,7 @@ public :
 
 	/*HANDLERS GENERAUX*/
 	void loadShaders() {
-		
+		cubeShader = Renderer->createProgram("shaders/cube");
 	}
 
 	void init() 
@@ -46,6 +50,9 @@ public :
 		world.init_world(rand());
 
 		player = new MAvatar(Renderer->Camera, &world);
+
+		CubeShape shape(CubeShape::Face::All);
+		cubeVbo = shape.createVbo();
 	}
 
 	void update(float elapsed) 
@@ -56,6 +63,7 @@ public :
 	void renderObjects() 
 	{
 		glUseProgram(0);
+		
 		//Rendu des axes
 		glDisable(GL_LIGHTING);
 		glBegin(GL_LINES);
@@ -69,6 +77,12 @@ public :
 		glVertex3d(0, 0, 0);
 		glVertex3d(0, 0, 10000);
 		glEnd();
+
+		glEnable(GL_LIGHTING);
+		glUseProgram(cubeShader);
+		Renderer->updateMatricesFromOgl();
+		Renderer->sendMatricesToShader(cubeShader);
+		cubeVbo->render();
 	}
 
 	void resize(int width, int height) {
@@ -83,16 +97,19 @@ public :
 			ScreenManager->specialKeyCallback(key, down, 0);
 		else
 			ScreenManager->keyCallback(key, down, 0);
+		
+		if (key == GLUT_KEY_F6 && down)
+			Mouse::changeMode();
 	}
 
 	void mouseWheel(int wheel, int dir, int x, int y, bool inUi)
 	{
-		
+
 	}
 
 	void mouseClick(int button, int state, int x, int y, bool inUi)
 	{
-		
+
 	}
 
 	void mouseMove(int x, int y, bool pressed, bool inUi)

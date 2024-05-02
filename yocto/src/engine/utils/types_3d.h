@@ -279,7 +279,7 @@ public:
 	T Y;
 	T Z;
 
-	YVec3() : X(0), Y(0), Z(0)
+	constexpr YVec3() : X(0), Y(0), Z(0)
 	{
 	}
 
