@@ -6,6 +6,11 @@
 #include "avatar.h"
 #include "world.h"
 #include "shape.h"
+#include "terrain.h"
+
+
+#include <thread>
+#include <chrono>
 
 class MEngineMinicraft : public YEngine {
 public :
@@ -24,7 +29,17 @@ public :
 	GUILabel* genWorldSeedLabel;
 
 	GLuint cubeShader;
-	std::unique_ptr<YVbo> cubeVbo;
+	GLuint cube_color;
+	YVbo* cubeVbo;
+
+	YVbo* chunkVboO0;
+	YVbo* chunkVboO1;
+	YVbo* chunkVboO2;
+	YVbo* chunkVboO3;
+	YVbo* chunkVboT0;
+	YVbo* chunkVboT1;
+	YVbo* chunkVboT2;
+	YVbo* chunkVboT3;
 
 	//Gestion singleton
 	static YEngine * getInstance()
@@ -47,12 +62,30 @@ public :
 
 		initGui();
 
-		world.init_world(rand());
-
 		player = new MAvatar(Renderer->Camera, &world);
 
-		CubeShape shape(CubeShape::Face::All);
+		CubeShape shape(CubeShape::ALL_FACES);
 		cubeVbo = shape.createVbo();
+
+		Terrain::Chunk chunk0 = Terrain::Chunk({ 0, 0, 0 });
+		Terrain::Chunk chunk1 = Terrain::Chunk({ 1, 0, 0 });
+		Terrain::Chunk chunk2 = Terrain::Chunk({ 0, 1, 0 });
+		Terrain::Chunk chunk3 = Terrain::Chunk({ 1, 1, 0 });
+
+		chunk0.generate(0);
+		chunk1.generate(0);
+		chunk2.generate(0);
+		chunk3.generate(0);
+
+		chunkVboO0 = chunk0.buildVboOpaque();
+		chunkVboO1 = chunk1.buildVboOpaque();
+		chunkVboO2 = chunk2.buildVboOpaque();
+		chunkVboO3 = chunk3.buildVboOpaque();
+
+		chunkVboT0 = chunk0.buildVboTransparent();
+		chunkVboT1 = chunk1.buildVboTransparent();
+		chunkVboT2 = chunk2.buildVboTransparent();
+		chunkVboT3 = chunk3.buildVboTransparent();
 	}
 
 	void update(float elapsed) 
@@ -66,6 +99,7 @@ public :
 		
 		//Rendu des axes
 		glDisable(GL_LIGHTING);
+
 		glBegin(GL_LINES);
 		glColor3d(1, 0, 0);
 		glVertex3d(0, 0, 0);
@@ -79,10 +113,27 @@ public :
 		glEnd();
 
 		glEnable(GL_LIGHTING);
+
+		glPushMatrix();
 		glUseProgram(cubeShader);
 		Renderer->updateMatricesFromOgl();
 		Renderer->sendMatricesToShader(cubeShader);
-		cubeVbo->render();
+		
+		//Opaque
+		glDisable(GL_BLEND);
+		chunkVboO0->render();
+		chunkVboO1->render();
+		chunkVboO2->render();
+		chunkVboO3->render();
+		
+		//Transparent
+		glEnable(GL_BLEND);
+		chunkVboT0->render();
+		chunkVboT1->render();
+		chunkVboT2->render();
+		chunkVboT3->render();
+
+		glPopMatrix();
 	}
 
 	void resize(int width, int height) {
@@ -90,7 +141,6 @@ public :
 	}
 
 	/*INPUTS*/
-
 	void keyPressed(int key, bool special, bool down, int p1, int p2) 
 	{	
 		if (special)

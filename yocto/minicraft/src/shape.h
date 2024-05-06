@@ -8,6 +8,14 @@
 #include "engine/render/vbo.h"
 #include "engine/utils/types_3d.h"
 
+struct GeometryVertex
+{
+	YVec3<float> position;
+	YVec3<float> normal;
+	YVec2<float> uv;
+	unsigned int type;
+};
+
 class CubeShape
 {
 private:
@@ -33,8 +41,10 @@ public:
 		West = 1 << 3,
 		Top = 1 << 4,
 		Bottom = 1 << 5,
-		All = North | East | South | West | Top | Bottom,
 	};
+
+	const static unsigned int ALL_FACES = North | East | South | West | Top | Bottom;
+	const static unsigned int NO_FACES = 0;
 
 	CubeShape(unsigned int faces)
 	{
@@ -54,9 +64,56 @@ public:
 		}
 	};
 
-	std::unique_ptr<YVbo> createVbo()
+	std::vector<GeometryVertex> createVboGeometry()
 	{
-		std::unique_ptr<YVbo> vbo = std::make_unique<YVbo>(YVbo(3, geometry.size() * 4, YVbo::PACK_BY_ELEMENT_TYPE));
+		std::vector<GeometryVertex> vertices{};
+		vertices.reserve(geometry.size() * 6);
+
+		for (int i = 0; i < geometry.size(); i++)
+		{
+			vertices.push_back({ 
+				{geometry[i][0].X, geometry[i][0].Y, geometry[i][0].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z}, 
+				{0, 0}
+				});
+
+			vertices.push_back({
+				{geometry[i][1].X, geometry[i][1].Y, geometry[i][1].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z},
+				{1, 0}
+				});
+
+			vertices.push_back({
+				{geometry[i][2].X, geometry[i][2].Y, geometry[i][2].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z},
+				{1, 1}
+				});
+
+			vertices.push_back({
+				{geometry[i][0].X, geometry[i][0].Y, geometry[i][0].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z},
+				{0, 0}
+				});
+
+			vertices.push_back({
+				{geometry[i][2].X, geometry[i][2].Y, geometry[i][2].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z},
+				{1, 1}
+				});
+
+			vertices.push_back({
+				{geometry[i][3].X, geometry[i][3].Y, geometry[i][3].Z},
+				{normals[i].X, normals[i].Y, normals[i].Z},
+				{0, 1}
+				});
+		}
+
+		return vertices;
+	}
+
+	YVbo* createVbo()
+	{
+		YVbo* vbo = new YVbo(3, geometry.size() * 6, YVbo::PACK_BY_ELEMENT_TYPE);
 
 		vbo->setElementDescription(0, YVbo::Element(3)); // Vertex
 		vbo->setElementDescription(1, YVbo::Element(3)); // Normal
@@ -64,28 +121,12 @@ public:
 
 		vbo->createVboCpu();
 
-		unsigned int vertexIndex = 0;
-		for (int i = 0; i < geometry.size(); i++)
+		std::vector<GeometryVertex> vboGeometry = createVboGeometry();
+		for (int i = 0; i < vboGeometry.size(); i++)
 		{
-			vbo->setElementValue(0, vertexIndex, geometry[i][0].X, geometry[i][0].Y, geometry[i][0].Z);
-			vbo->setElementValue(1, vertexIndex, normals[i].X, normals[i].Y, normals[i].Z);
-			vbo->setElementValue(2, vertexIndex, 0, 0);
-			vertexIndex++;
-
-			vbo->setElementValue(0, vertexIndex, geometry[i][1].X, geometry[i][1].Y, geometry[i][1].Z);
-			vbo->setElementValue(1, vertexIndex, normals[i].X, normals[i].Y, normals[i].Z);
-			vbo->setElementValue(2, vertexIndex, 0, 0);
-			vertexIndex++;
-
-			vbo->setElementValue(0, vertexIndex, geometry[i][2].X, geometry[i][2].Y, geometry[i][2].Z);
-			vbo->setElementValue(1, vertexIndex, normals[i].X, normals[i].Y, normals[i].Z);
-			vbo->setElementValue(2, vertexIndex, 0, 0);
-			vertexIndex++;
-
-			vbo->setElementValue(0, vertexIndex, geometry[i][3].X, geometry[i][3].Y, geometry[i][3].Z);
-			vbo->setElementValue(1, vertexIndex, normals[i].X, normals[i].Y, normals[i].Z);
-			vbo->setElementValue(2, vertexIndex, 0, 0);
-			vertexIndex++;
+			vbo->setElementValue(0, i, vboGeometry[i].position.X, vboGeometry[i].position.Y, vboGeometry[i].position.Z);
+			vbo->setElementValue(1, i, vboGeometry[i].normal.X, vboGeometry[i].normal.Y, vboGeometry[i].normal.Z);
+			vbo->setElementValue(2, i, vboGeometry[i].uv.X, vboGeometry[i].uv.Y);
 		}
 
 		vbo->createVboGpu();
@@ -131,7 +172,7 @@ public:
 		case Face::Top:
 			return { vertices[3], vertices[2], vertices[6], vertices[7] };
 		case Face::Bottom:
-			return { vertices[5], vertices[4], vertices[0], vertices[1] };
+			return { vertices[4], vertices[5], vertices[1], vertices[0] };
 		default:
 			return {};
 		}

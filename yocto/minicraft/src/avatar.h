@@ -34,7 +34,7 @@ public:
 
 	MAvatar(YCamera* cam, MWorld* world)
 	{
-		Position = YVec3f(10, 10, 10);
+		Position = YVec3f(20, 20, 20);
 		Height = 1.8f;
 		CurrentHeight = Height;
 		Width = 0.3f;
@@ -46,9 +46,9 @@ public:
 		InWater = false;
 		Crouch = false;
 		Run = false;
-		Speed = 10;
-		RunSpeedAdd = 5;
-		CrouchSpeedSub = 5;
+		Speed = 30;
+		RunSpeedAdd = 70;
+		CrouchSpeedSub = 20;
 		LookAt = YVec3f();
 
 		Cam->setPosition(Position + YVec3f(0, 0, Height - 0.2f));

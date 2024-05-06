@@ -4,6 +4,7 @@
 #include "engine/render/vbo.h"
 #include "cube.h"
 
+
 /**
   * On utilise des chunks pour que si on modifie juste un cube, on ait pas
   * besoin de recharger toute la carte dans le buffer, mais juste le chunk en question
@@ -49,13 +50,15 @@ class MChunk
 		}
 
 		//Ajoute un quad du cube. Attention CCW
-		int addQuadToVbo(YVbo * vbo, int iVertice, YVec3f & a, YVec3f & b, YVec3f & c, YVec3f & d, float type) {
+		int addQuadToVbo(YVbo * vbo, int iVertice, YVec3f & a, YVec3f & b, YVec3f & c, YVec3f & d, float type) 
+		{
 
 			return 6;
 		}
 
 		//Permet de compter les triangles ou des les ajouter aux VBO
-		void foreachVisibleTriangle(bool countOnly, int * nbVertOpaque, int * nbVertTransp, YVbo * VboOpaque, YVbo * VboTrasparent) {
+		void foreachVisibleTriangle(bool countOnly, int * nbVertOpaque, int * nbVertTransp, YVbo * VboOpaque, YVbo * VboTrasparent) 
+		{
 
 
 		}

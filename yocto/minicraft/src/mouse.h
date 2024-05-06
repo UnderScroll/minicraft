@@ -7,11 +7,8 @@ class Mouse
 public:
 	static void changeMode()
 	{
+		YEngine::getInstance()->showMouse(fpv);
 		Mouse::fpv = !Mouse::fpv;
-		if (fpv)
-			glutSetCursor(GLUT_CURSOR_NONE);
-		else
-			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
 
 		Mouse::position = Mouse::newPosition;
 	}

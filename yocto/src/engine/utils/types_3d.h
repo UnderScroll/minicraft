@@ -516,6 +516,13 @@ public:
 	}
 };
 
+template<typename T>
+std::ostream& operator <<(std::ostream& os, const YVec3<T>& vec)
+{
+	os << "(" << vec.X << ", " << vec.Y << ", " << vec.Z << ")";
+	return os;
+}
+
 #define YVec2f YVec2<float>
 #define YVec2d YVec2<double>
 #define YVec2i YVec2<int>
