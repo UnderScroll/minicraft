@@ -6,7 +6,7 @@
 #include "shape.h"
 #include <engine/noise/perlin.h>
 
-static const unsigned int CHUNK_SIZE = 64;
+static const unsigned int CHUNK_SIZE = 16;
 static const unsigned int TERRAIN_HEIGHT = 10;
 static const unsigned int WATER_LEVEL = 16;
 
@@ -49,7 +49,6 @@ const std::map<Block::Type, Block> Block::blockMap = {
 	{ Type::Stone, {Type::Stone, false} },
 	{ Type::Water, {Type::Water, true} },
 };
-
 
 class Terrain
 {
@@ -147,7 +146,7 @@ public:
 							if (world_z < WATER_LEVEL)
 								if (getBlock(x, y, z)->type == Block::Type::Air)
 									setBlock(Block::get(Block::Water), x, y, z);
-								else if (world_z + 1!= WATER_LEVEL && getBlock(x, y, z)->type == Block::Type::Grass)
+								else if (world_z + 1 != WATER_LEVEL && getBlock(x, y, z)->type == Block::Type::Grass)
 									setBlock(Block::get(Block::Dirt), x, y, z);
 						}
 			}
@@ -173,7 +172,7 @@ public:
 							else
 								inCave *= (float)TERRAIN_HEIGHT * 10 / (float)(world_z + TERRAIN_HEIGHT * 10);
 							if (inCave > 0.52
-								&& getBlock(x, y, z)->type != Block::Water 
+								&& getBlock(x, y, z)->type != Block::Water
 								&& getBlock(x, y, z + 1)->type != Block::Water
 								&& getBlock(x, y, z + 2)->type != Block::Water
 								&& getBlock(x + 1, y, z)->type != Block::Water
@@ -291,7 +290,7 @@ public:
 							const Block* topblock = getBlock(x, y, z + 1);
 							const Block* bottomblock = getBlock(x, y, z - 1);
 
-							faces |= (!(bool)northtblock->type| northtblock->transparent) << 0;//North
+							faces |= (!(bool)northtblock->type | northtblock->transparent) << 0;//North
 							faces |= (!(bool)eastblock->type | eastblock->transparent) << 1;	//East
 							faces |= (!(bool)southblock->type | southblock->transparent) << 2;	//South
 							faces |= (!(bool)westblock->type | westblock->transparent) << 3;	//West
@@ -349,4 +348,42 @@ public:
 		std::vector<const Block*> blocks;
 		std::vector<CubeShape> cubes;
 	};
+
+	std::vector<Chunk*> chunks;
+	std::vector<YVbo*> chunckOpaqueVbos;
+	std::vector<YVbo*> chunckTransparentVbos;
+
+	Terrain(unsigned int chunkDist)
+	{
+		chunks = {};
+		chunckOpaqueVbos = {};
+		chunckTransparentVbos = {};
+		for (unsigned int x = 0; x < chunkDist; x++)
+			for (unsigned int y = 0; y < chunkDist; y++)
+				for (unsigned int z = 0; z < chunkDist; z++)
+				{
+					chunks.push_back(&Chunk());
+					chunckOpaqueVbos.push_back(nullptr);
+					chunckTransparentVbos.push_back(nullptr);
+				}
+
+		buildVbos();
+	}
+
+	void buildVbos()
+	{
+	}
+
+	void generate()
+	{
+	}
+
+	void render()
+	{
+		for (YVbo* opaqueVbo : chunckOpaqueVbos)
+			opaqueVbo->render();
+
+		for (YVbo* transparentVbo : chunckTransparentVbos)
+			transparentVbo->render();
+	}
 };

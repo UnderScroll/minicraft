@@ -91,7 +91,6 @@ public:
 	bool firstMouse = true;
 	int lastX, lastY;
 
-
 	void handleInput()
 	{
 		YVec3f forward = Cam->Direction * (GetKeyState('Z') & 0x8000);

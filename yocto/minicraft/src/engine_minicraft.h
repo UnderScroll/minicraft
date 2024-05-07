@@ -64,25 +64,7 @@ public :
 
 		player = new MAvatar(Renderer->Camera, &world);
 
-		Terrain::Chunk chunk0 = Terrain::Chunk({ 0, 0, 0 });
-		Terrain::Chunk chunk1 = Terrain::Chunk({ 1, 0, 0 });
-		Terrain::Chunk chunk2 = Terrain::Chunk({ 0, 1, 0 });
-		Terrain::Chunk chunk3 = Terrain::Chunk({ 1, 1, 0 });
-
-		chunk0.generate(0);
-		chunk1.generate(0);
-		chunk2.generate(0);
-		chunk3.generate(0);
-
-		chunkVboO0 = chunk0.buildVboOpaque();
-		chunkVboO1 = chunk1.buildVboOpaque();
-		chunkVboO2 = chunk2.buildVboOpaque();
-		chunkVboO3 = chunk3.buildVboOpaque();
-
-		chunkVboT0 = chunk0.buildVboTransparent();
-		chunkVboT1 = chunk1.buildVboTransparent();
-		chunkVboT2 = chunk2.buildVboTransparent();
-		chunkVboT3 = chunk3.buildVboTransparent();
+		Terrain terrain{ 1 };
 
 		sun.createVbo();
 
