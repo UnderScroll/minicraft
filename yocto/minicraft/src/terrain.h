@@ -172,7 +172,14 @@ public:
 								inCave *= (double)world_z / ((double)world_z + (double)TERRAIN_HEIGHT * 0.02) - 0.01;
 							else
 								inCave *= (float)TERRAIN_HEIGHT * 10 / (float)(world_z + TERRAIN_HEIGHT * 10);
-							if (inCave > 0.5 && getBlock(x, y, z)->type != Block::Water)
+							if (inCave > 0.52
+								&& getBlock(x, y, z)->type != Block::Water 
+								&& getBlock(x, y, z + 1)->type != Block::Water
+								&& getBlock(x, y, z + 2)->type != Block::Water
+								&& getBlock(x + 1, y, z)->type != Block::Water
+								&& getBlock(x, y + 1, z)->type != Block::Water
+								&& getBlock(x - 1, y, z)->type != Block::Water
+								&& getBlock(x, y - 1, z)->type != Block::Water)
 								setBlock(Block::get(Block::Air), x, y, z);
 						}
 					}
@@ -241,7 +248,7 @@ public:
 			vbo->createVboCpu();
 
 			//Pass geometry to Vbo
-#pragma parallel
+#pragma omp parallel
 			for (size_t i = 0; i < vertices.size(); i++)
 			{
 				vbo->setElementValue(0, i, vertices[i].position.X, vertices[i].position.Y, vertices[i].position.Z);
@@ -316,7 +323,7 @@ public:
 			vbo->createVboCpu();
 
 			//Pass geometry to Vbo
-#pragma parallel
+#pragma omp parallel
 			for (size_t i = 0; i < vertices.size(); i++)
 			{
 				vbo->setElementValue(0, i, vertices[i].position.X, vertices[i].position.Y, vertices[i].position.Z);

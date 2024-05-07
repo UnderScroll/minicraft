@@ -27,6 +27,7 @@
     <ClCompile Include="..\src\engine\render\fbo.cpp" />
     <ClCompile Include="..\src\engine\render\vbo.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sun.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="run\shaders\birds\fs.glsl" />

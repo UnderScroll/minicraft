@@ -7,7 +7,7 @@ in vec2 uv;
 
 out vec4 color_out;
 
-vec3 toLight = vec3(0.7, 0.8, 0.3);
+uniform vec3 toLight;
 
 void main()
 {

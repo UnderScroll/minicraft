@@ -69,7 +69,8 @@ public:
 		std::vector<GeometryVertex> vertices{};
 		vertices.reserve(geometry.size() * 6);
 
-		for (int i = 0; i < geometry.size(); i++)
+#pragma omp parallel
+		for (size_t i = 0; i < geometry.size(); i++)
 		{
 			vertices.push_back({ 
 				{geometry[i][0].X, geometry[i][0].Y, geometry[i][0].Z},
@@ -122,7 +123,7 @@ public:
 		vbo->createVboCpu();
 
 		std::vector<GeometryVertex> vboGeometry = createVboGeometry();
-		for (int i = 0; i < vboGeometry.size(); i++)
+		for (size_t i = 0; i < vboGeometry.size(); i++)
 		{
 			vbo->setElementValue(0, i, vboGeometry[i].position.X, vboGeometry[i].position.Y, vboGeometry[i].position.Z);
 			vbo->setElementValue(1, i, vboGeometry[i].normal.X, vboGeometry[i].normal.Y, vboGeometry[i].normal.Z);

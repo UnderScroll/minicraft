@@ -7,7 +7,7 @@
 #include "world.h"
 #include "shape.h"
 #include "terrain.h"
-
+#include "sun.h"
 
 #include <thread>
 #include <chrono>
@@ -29,8 +29,9 @@ public :
 	GUILabel* genWorldSeedLabel;
 
 	GLuint cubeShader;
-	GLuint cube_color;
-	YVbo* cubeVbo;
+	GLuint toLightUniform;
+
+	Sun sun;
 
 	YVbo* chunkVboO0;
 	YVbo* chunkVboO1;
@@ -52,20 +53,16 @@ public :
 	/*HANDLERS GENERAUX*/
 	void loadShaders() {
 		cubeShader = Renderer->createProgram("shaders/cube");
+		sun.loadSunShader();
 	}
 
 	void init() 
 	{
 		YLog::log(YLog::ENGINE_INFO,"Minicraft Started : initialisation");
 
-		Renderer->setBackgroundColor(YColor(0.0f,0.0f,0.0f,1.0f));
-
 		initGui();
 
 		player = new MAvatar(Renderer->Camera, &world);
-
-		CubeShape shape(CubeShape::ALL_FACES);
-		cubeVbo = shape.createVbo();
 
 		Terrain::Chunk chunk0 = Terrain::Chunk({ 0, 0, 0 });
 		Terrain::Chunk chunk1 = Terrain::Chunk({ 1, 0, 0 });
@@ -86,41 +83,32 @@ public :
 		chunkVboT1 = chunk1.buildVboTransparent();
 		chunkVboT2 = chunk2.buildVboTransparent();
 		chunkVboT3 = chunk3.buildVboTransparent();
+
+		sun.createVbo();
+
+		toLightUniform = glGetUniformLocation(cubeShader, "toLight");
 	}
 
 	void update(float elapsed) 
 	{
 		player->update(elapsed);
+		sun.position = player->Position;
+		sun.update();
 	}
 
 	void renderObjects() 
 	{
 		glUseProgram(0);
-		
-		//Rendu des axes
-		glDisable(GL_LIGHTING);
-
-		glBegin(GL_LINES);
-		glColor3d(1, 0, 0);
-		glVertex3d(0, 0, 0);
-		glVertex3d(10000, 0, 0);
-		glColor3d(0, 1, 0);
-		glVertex3d(0, 0, 0);
-		glVertex3d(0, 10000, 0);
-		glColor3d(0, 0, 1);
-		glVertex3d(0, 0, 0);
-		glVertex3d(0, 0, 10000);
-		glEnd();
-
-		glEnable(GL_LIGHTING);
+		Renderer->setBackgroundColor(sun.skyColor);
+		renderAxis();
 
 		glPushMatrix();
 		glUseProgram(cubeShader);
+		glUniform3f(toLightUniform, sun.direction.X, sun.direction.Y, sun.direction.Z);
 		Renderer->updateMatricesFromOgl();
 		Renderer->sendMatricesToShader(cubeShader);
 		
 		//Opaque
-		glDisable(GL_BLEND);
 		chunkVboO0->render();
 		chunkVboO1->render();
 		chunkVboO2->render();
@@ -132,8 +120,11 @@ public :
 		chunkVboT1->render();
 		chunkVboT2->render();
 		chunkVboT3->render();
+		glDisable(GL_BLEND);
 
 		glPopMatrix();
+
+		sun.render();
 	}
 
 	void resize(int width, int height) {
@@ -198,6 +189,25 @@ public :
 		hash<string> hasher;
 		size_t newSeed = hasher(mInstance->genWorldSeedEdtBox->Text);
 		mInstance->world.init_world(newSeed);
+	}
+
+	void renderAxis()
+	{
+		glDisable(GL_LIGHTING);
+
+		glBegin(GL_LINES);
+		glColor3d(1, 0, 0);
+		glVertex3d(0, 0, 0);
+		glVertex3d(10000, 0, 0);
+		glColor3d(0, 1, 0);
+		glVertex3d(0, 0, 0);
+		glVertex3d(0, 10000, 0);
+		glColor3d(0, 0, 1);
+		glVertex3d(0, 0, 0);
+		glVertex3d(0, 0, 10000);
+		glEnd();
+
+		glEnable(GL_LIGHTING);
 	}
 };
 
